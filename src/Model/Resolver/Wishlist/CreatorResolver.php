@@ -1,48 +1,46 @@
 <?php
+
 /**
- * ScandiPWA - Progressive Web App for Magento
- *
- * Copyright © Scandiweb, Inc. All rights reserved.
+ * @category    ScandiPWA
+ * @package     ScandiPWA_WishlistGraphQl
+ * @copyright   Copyright © Scandiweb, Inc. All rights reserved.
+ * @copyright   Modifications © Selveq. All rights reserved.
+ * @license     OSL-3.0 (Open Software License ("OSL") v. 3.0)
  * See LICENSE for license details.
- *
- * @license OSL-3.0 (Open Software License ("OSL") v. 3.0)
- * @package scandipwa/wishlist-graphql
- * @link    https://github.com/scandipwa/wishlist-graphql
  */
 
 declare(strict_types=1);
 
 namespace ScandiPWA\WishlistGraphQl\Model\Resolver\Wishlist;
 
-use Magento\Wishlist\Model\Wishlist;
-use Magento\Customer\Api\Data\CustomerInterface;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\GraphQl\Config\Element\Field;
-use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
 use Magento\Framework\GraphQl\Query\ResolverInterface;
-use Magento\Customer\Model\ResourceModel\CustomerRepository;
+use Magento\Framework\GraphQl\Schema\Type\ResolveInfo;
+use Magento\Wishlist\Model\Wishlist;
 
 class CreatorResolver implements ResolverInterface
 {
     /**
-     * @var CustomerRepository
+     * @param CustomerRepositoryInterface $customerRepository
      */
-    protected $customerRepository;
-
     public function __construct(
-        CustomerRepository $customerRepository
-    ) {
-        $this->customerRepository = $customerRepository;
-    }
+        private readonly CustomerRepositoryInterface $customerRepository
+    ) {}
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     * @throws NoSuchEntityException
+     * @throws LocalizedException
      */
     public function resolve(
         Field $field,
         $context,
         ResolveInfo $info,
-        array $value = null,
-        array $args = null
+        ?array $value = null,
+        ?array $args = null
     ) {
         /** @var Wishlist $wishlist */
         $wishlist = $value['model'] ?? null;
@@ -57,14 +55,11 @@ class CreatorResolver implements ResolverInterface
             return null;
         }
 
-        /** @var CustomerInterface $customer */
         $customer = $this->customerRepository->getById($customerId);
 
         $firstName = $customer->getFirstname();
         $lastName = $customer->getLastname();
 
-        $creatorsName = "$firstName $lastName";
-
-        return $creatorsName;
+        return "$firstName $lastName";
     }
 }

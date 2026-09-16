@@ -1,71 +1,21 @@
-# ScandiPWA_WishlistGraphQl
+# ScandiPWA WishlistGraphQl
 
-**WishlistGraphQl** provides additional resolvers for wishlist, extending Magento_WishlistGraphQl. 
+Fork of [scandipwa/wishlist-graphql](https://github.com/scandipwa/wishlist-graphql) 2.0.17, maintained by Selveq for Magento 2.4.9 and PHP 8.3. Module name and namespace are unchanged, and the package replaces `scandipwa/wishlist-graphql` at every version, so it installs as a drop-in replacement. Selveq is not affiliated with or endorsed by Scandiweb.
 
+## What it does
 
-### SaveWishlistItem
+- Serves the wish list the ScandiPWA theme drives: `s_saveWishlistItem`, `s_removeProductFromWishlist`, `s_clearWishlist` and `s_moveWishlistToCart` as mutations, and `s_wishlist` to read a list — the caller's own, or somebody else's by its sharing code, which copies the items to the cart rather than emptying the list, because only its owner's own request empties it.
+- Adds the fields the theme reads to Magento's wish list types: the list's `id` and `creators_name`, and an item's `sku`, `price` and `price_without_tax` at that item's own quantity, `buy_request` and `options`. `s_saveWishlistItem` answers the saved item's `id` and `sku`, and clients read the rest through `s_wishlist`.
+- Carries file-type customizable options into the list as base64 uploads — narrowed to the extensions the product option declares, bounded by the platform's maximum file size and stored under a generated name — and re-submits them to the cart with the secret key Magento validates against the stored file.
+- Shares a list by email through `s_shareWishlist`, bounded by the email allowance and message length under Stores > Configuration > Customers > Wish List, and sent from the store's own sender identity rather than the customer's address.
 
-This endpoint allows to save Wishlist item
+## Install
 
-```graphql
-mutation SaveWishlistItem($wishlistItem: WishlistItemInput!) {
-    saveWishlistItem(wishlistItem: $wishlistItem) {
-         id
-         sku
-         qty
-         description
-         added_at
-         product
-    }
-}
+```sh
+composer require selveq/wishlist-graphql
+bin/magento setup:upgrade
 ```
 
-```json
-{
-   "wishlistItem": {
-       "sku": "n31189077-1",
-       "quantity": 2,
-       "description": "Description",
-       "product_option": {
-           "extension_attributes": {}
-       }
-   }
-}
-```
+## License
 
-
-### RemoveProductFromWishlist
-
-This endpoint allows removing item from wishlist
-
-```graphql
-mutation RemoveProductFromWishlist($item_id: ID!) {
-    removeProductFromWishlist(item_id: $item_id)
-}
-```
-
-```json
-{
-   "item_id": 1
-}
-```
-
-### MoveWishlistToCart
-
-This endpoint allows to move all wishlist items to cart
-
-```graphql
-mutation MoveWishlistToCart {
-    moveWishlistToCart()
-}
-```
-
-### ClearWishlist
-
-This endpoint allows to clear wishlist
-
-```graphql
-mutation ClearWishlist {
-    clearWishlist()
-}
-```
+[OSL-3.0](LICENSE), the license of the original work. Scandiweb's copyright notices are kept in every file, and each file Selveq changed carries a `Modifications © Selveq` notice.
